@@ -1,4 +1,4 @@
-import {Definitions, IProcessModelRepository, Model, ProcessModelFromRepository} from '@process-engine/process_engine_contracts';
+import {Definitions, IProcessModelRepository, Model, ProcessDefinitionFromRepository} from '@process-engine/process_engine_contracts';
 
 import {getConnection} from '@essential-projects/sequelize_connection_manager';
 
@@ -25,7 +25,7 @@ export class ProcessModelRepository implements IProcessModelRepository {
 
   private sequelize: Sequelize.Sequelize;
 
-  private processModel(): Sequelize.Model<ProcessModel, IProcessModelAttributes> {
+  private get processModel(): Sequelize.Model<ProcessModel, IProcessModelAttributes> {
     return this._processModel;
   }
 
@@ -38,17 +38,29 @@ export class ProcessModelRepository implements IProcessModelRepository {
     throw new Error('Not implemented.');
   }
 
-  public async getProcessModelById(processModelId: string): Promise<Model.Types.Process> {
-    throw new Error('Not implemented.');
+  public async getProcessModels(): Promise<Array<ProcessDefinitionFromRepository>> {
+    const result: Array<ProcessModel> = await this.processModel.findAll();
+
+    const runtimeProcessModels: Array<ProcessDefinitionFromRepository> = result.map(this._convertToProcessModelRuntimeObject);
+
+    return runtimeProcessModels;
   }
 
-  public async getProcessModels(): Promise<Array<Model.Types.Process>> {
-    throw new Error('Not implemented.');
+  public async getProcessModelById(processModelId: string): Promise<ProcessDefinitionFromRepository> {
+    const result: ProcessModel = await this.processModel.findOne({
+      where: {
+        processModelId: processModelId,
+      },
+    });
+
+    const runtimeProcessModel: ProcessDefinitionFromRepository = this._convertToProcessModelRuntimeObject(result);
+
+    return runtimeProcessModel;
   }
 
-  private _convertToProcessModelRuntimeObject(dataModel: ProcessModel): ProcessModelFromRepository {
+  private _convertToProcessModelRuntimeObject(dataModel: ProcessModel): ProcessDefinitionFromRepository {
 
-    const processModel: ProcessModelFromRepository = new ProcessModelFromRepository();
+    const processModel: ProcessDefinitionFromRepository = new ProcessDefinitionFromRepository();
     processModel.id = dataModel.processModelId;
     processModel.xml = dataModel.xml;
 
