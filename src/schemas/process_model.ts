@@ -1,15 +1,15 @@
 import * as Sequelize from 'sequelize';
 
-interface ProcessModelAttributes {
+export interface IProcessModelAttributes {
   id: string;
   processModelId: string;
   xml: string;
 }
 
-type ProcessModel = Sequelize.Instance<ProcessModelAttributes> & ProcessModelAttributes;
+export type ProcessModel = Sequelize.Instance<IProcessModelAttributes> & IProcessModelAttributes;
 
-export function sequelizeProcessModel(sequelize: Sequelize.Sequelize): any {
-  const attributes: SequelizeAttributes<ProcessModelAttributes> = {
+export function defineProcessModel(sequelize: Sequelize.Sequelize): any {
+  const attributes: SequelizeAttributes<IProcessModelAttributes> = {
     id: {
       type: Sequelize.UUID,
       primaryKey: true,
@@ -25,5 +25,5 @@ export function sequelizeProcessModel(sequelize: Sequelize.Sequelize): any {
     },
   };
 
-  return sequelize.define<ProcessModel, ProcessModelAttributes>('ProcessModel', attributes);
+  return sequelize.define<ProcessModel, IProcessModelAttributes>('ProcessModel', attributes);
 }
