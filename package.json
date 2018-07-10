@@ -14,6 +14,7 @@
   ],
   "dependencies": {
     "@essential-projects/errors_ts": "^1.2.0",
+    "@essential-projects/sequelize_connection_manager": "feature~implement_persistence_layer",
     "@process-engine/process_engine_contracts": "feature~implement_persistence_layer",
     "loggerhythm": "^3.0.3",
     "pg": "^7.4.3",
