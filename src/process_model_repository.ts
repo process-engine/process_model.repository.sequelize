@@ -1,4 +1,4 @@
-import {Definitions, IProcessModelRepository, Model} from '@process-engine/process_engine_contracts';
+import {Definitions, IProcessModelFromRepository, IProcessModelRepository, Model} from '@process-engine/process_engine_contracts';
 
 export class ProcessModelRepository implements IProcessModelRepository {
 
