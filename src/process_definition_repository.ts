@@ -1,11 +1,11 @@
-import {Definitions, IProcessDefinitionRepository, Model, ProcessDefinitionFromRepository} from '@process-engine/process_engine_contracts';
+import {IProcessDefinitionRepository, ProcessDefinitionFromRepository} from '@process-engine/process_engine_contracts';
 
 import {getConnection} from '@essential-projects/sequelize_connection_manager';
 
 import * as Sequelize from 'sequelize';
 
 import {loadModels} from './model_loader';
-import {IProcessModelAttributes, ProcessModel} from './schemas';
+import {IProcessDefinitionAttributes, ProcessDefinition} from './schemas';
 
 export class ProcessDefinitionRepository implements IProcessDefinitionRepository {
 
@@ -21,37 +21,37 @@ export class ProcessDefinitionRepository implements IProcessDefinitionRepository
   //   "resetPasswordRequestTimeToLive": 12
   // }
 
-  private _processModel: Sequelize.Model<ProcessModel, IProcessModelAttributes>;
+  private _processDefinition: Sequelize.Model<ProcessDefinition, IProcessDefinitionAttributes>;
 
   private sequelize: Sequelize.Sequelize;
 
-  private get processModel(): Sequelize.Model<ProcessModel, IProcessModelAttributes> {
-    return this._processModel;
+  private get processDefinition(): Sequelize.Model<ProcessDefinition, IProcessDefinitionAttributes> {
+    return this._processDefinition;
   }
 
   public async initialize(): Promise<void> {
     this.sequelize = await getConnection(this.config.database, this.config.username, this.config.password, this.config);
-    this._processModel = await loadModels(this.sequelize);
+    this._processDefinition = await loadModels(this.sequelize);
   }
 
-  public async persistProcessDefinitions(definitions: Definitions): Promise<void> {
+  public async persistProcessDefinitions(name: string, xml: string): Promise<void> {
     throw new Error('Not implemented.');
   }
 
   public async getProcessDefinitions(): Promise<Array<ProcessDefinitionFromRepository>> {
-    const result: Array<ProcessModel> = await this.processModel.findAll();
+    const result: Array<ProcessDefinition> = await this.processDefinition.findAll();
 
-    const runtimeProcessModels: Array<ProcessDefinitionFromRepository> = result.map(this._convertToProcessModelRuntimeObject);
+    const runtimeProcessDefinitions: Array<ProcessDefinitionFromRepository> = result.map(this._convertToProcessDefinitionRuntimeObject);
 
-    return runtimeProcessModels;
+    return runtimeProcessDefinitions;
   }
 
-  private _convertToProcessModelRuntimeObject(dataModel: ProcessModel): ProcessDefinitionFromRepository {
+  private _convertToProcessDefinitionRuntimeObject(dataModel: ProcessDefinition): ProcessDefinitionFromRepository {
 
-    const processModel: ProcessDefinitionFromRepository = new ProcessDefinitionFromRepository();
-    processModel.id = dataModel.processModelId;
-    processModel.xml = dataModel.xml;
+    const processDefinition: ProcessDefinitionFromRepository = new ProcessDefinitionFromRepository();
+    processDefinition.name = dataModel.name;
+    processDefinition.xml = dataModel.xml;
 
-    return processModel;
+    return processDefinition;
   }
 }

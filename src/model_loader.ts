@@ -1,16 +1,16 @@
 import * as Sequelize from 'sequelize';
 
 import {
-  defineProcessModel,
-  IProcessModelAttributes,
-  ProcessModel,
+  defineProcessDefinition,
+  IProcessDefinitionAttributes,
+  ProcessDefinition,
 } from './schemas/index';
 
-export async function loadModels(sequelizeInstance: Sequelize.Sequelize): Promise<Sequelize.Model<ProcessModel, IProcessModelAttributes>> {
+export async function loadModels(sequelizeInstance: Sequelize.Sequelize): Promise<Sequelize.Model<ProcessDefinition, IProcessDefinitionAttributes>> {
 
-  const processModel: Sequelize.Model<ProcessModel, IProcessModelAttributes> = defineProcessModel(sequelizeInstance);
+  const processDefinition: Sequelize.Model<ProcessDefinition, IProcessDefinitionAttributes> = defineProcessDefinition(sequelizeInstance);
 
   await sequelizeInstance.sync();
 
-  return processModel;
+  return processDefinition;
 }

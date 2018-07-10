@@ -1,1 +1,1 @@
-export * from './process_model';
+export * from './process_definition';
