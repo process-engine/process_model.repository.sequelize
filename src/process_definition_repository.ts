@@ -7,7 +7,7 @@ import * as Sequelize from 'sequelize';
 import {loadModels} from './model_loader';
 import {IProcessModelAttributes, ProcessModel} from './schemas';
 
-export class ProcessModelRepository implements IProcessDefinitionRepository {
+export class ProcessDefinitionRepository implements IProcessDefinitionRepository {
 
   public config: any;
   // {
