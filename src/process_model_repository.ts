@@ -1,4 +1,4 @@
-import {Definitions, IProcessModelFromRepository, IProcessModelRepository, Model} from '@process-engine/process_engine_contracts';
+import {Definitions, IProcessModelRepository, Model, ProcessModelFromRepository} from '@process-engine/process_engine_contracts';
 
 import {getConnection} from '@essential-projects/sequelize_connection_manager';
 
@@ -44,5 +44,14 @@ export class ProcessModelRepository implements IProcessModelRepository {
 
   public async getProcessModels(): Promise<Array<Model.Types.Process>> {
     throw new Error('Not implemented.');
+  }
+
+  private _convertToProcessModelRuntimeObject(dataModel: ProcessModel): ProcessModelFromRepository {
+
+    const processModel: ProcessModelFromRepository = new ProcessModelFromRepository();
+    processModel.id = dataModel.processModelId;
+    processModel.xml = dataModel.xml;
+
+    return processModel;
   }
 }
