@@ -34,8 +34,29 @@ export class ProcessDefinitionRepository implements IProcessDefinitionRepository
     this._processDefinition = await loadModels(this.sequelize);
   }
 
-  public async persistProcessDefinitions(name: string, xml: string): Promise<void> {
-    throw new Error('Not implemented.');
+  public async persistProcessDefinitions(name: string, xml: string, overwriteExisting: boolean = true): Promise<void> {
+
+    const query: Sequelize.FindOptions<IProcessDefinitionAttributes> = {
+      where: {
+        name: name,
+      },
+    };
+
+    const existingDefinition: ProcessDefinition = await this.processDefinition.findOne(query);
+
+    if (existingDefinition) {
+      if (!overwriteExisting) {
+        throw new Error(`Process definition with the name '${name}' already exists!`);
+      } else {
+        existingDefinition.xml = xml;
+        await existingDefinition.save();
+      }
+    } else {
+      await this.processDefinition.create(<any> {
+        name: name,
+        xml: xml,
+      });
+    }
   }
 
   public async getProcessDefinitions(): Promise<Array<ProcessDefinitionFromRepository>> {
