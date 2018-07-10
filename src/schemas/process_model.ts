@@ -17,6 +17,7 @@ export function defineProcessModel(sequelize: Sequelize.Sequelize): any {
     },
     processModelId: {
       type: Sequelize.STRING,
+      unique: true,
       allowNull: false,
     },
     xml: {
