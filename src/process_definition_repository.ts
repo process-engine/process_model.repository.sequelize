@@ -10,16 +10,6 @@ import {IProcessDefinitionAttributes, ProcessDefinition} from './schemas';
 export class ProcessDefinitionRepository implements IProcessDefinitionRepository {
 
   public config: any;
-  // {
-  //   "username": "admin",
-  //   "password": "admin",
-  //   "database": "processengine",
-  //   "host": "localhost",
-  //   "port": 45678,
-  //   "dialect": "postgres",
-  //   "supportBigNumbers": true,
-  //   "resetPasswordRequestTimeToLive": 12
-  // }
 
   private _processDefinition: Sequelize.Model<ProcessDefinition, IProcessDefinitionAttributes>;
 

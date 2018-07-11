@@ -21,7 +21,8 @@ export function defineProcessDefinition(sequelize: Sequelize.Sequelize): any {
       allowNull: false,
     },
     xml: {
-      type: Sequelize.STRING,
+      // NOTE: "Sequelize.STRING" equals varchar(255), which is far too short for this.
+      type: Sequelize.TEXT,
       allowNull: false,
     },
   };
