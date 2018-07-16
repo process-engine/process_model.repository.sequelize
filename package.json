@@ -35,7 +35,7 @@
     "build": "gulp build",
     "build-doc": "gulp doc",
     "lint": "gulp lint",
-    "prepare": "npm run build && npm run build-doc",
+    "prepare": "npm run build",
     "test": "gulp test"
   }
 }
