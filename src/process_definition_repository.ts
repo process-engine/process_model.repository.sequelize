@@ -9,7 +9,7 @@ import {IProcessDefinitionAttributes, ProcessDefinition} from './schemas';
 
 export class ProcessDefinitionRepository implements IProcessDefinitionRepository {
 
-  public config: any;
+  public config: Sequelize.Options;
 
   private _processDefinition: Sequelize.Model<ProcessDefinition, IProcessDefinitionAttributes>;
 
@@ -20,7 +20,7 @@ export class ProcessDefinitionRepository implements IProcessDefinitionRepository
   }
 
   public async initialize(): Promise<void> {
-    this.sequelize = await getConnection(this.config.database, this.config.username, this.config.password, this.config);
+    this.sequelize = await getConnection(this.config);
     this._processDefinition = await loadModels(this.sequelize);
   }
 
