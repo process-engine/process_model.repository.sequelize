@@ -57,7 +57,7 @@ export class ProcessDefinitionRepository implements IProcessDefinitionRepository
     return runtimeProcessDefinitions;
   }
 
-  public async getProcessDefinitionByName(definitionId: string): Promise<ProcessDefinitionRaw> {
+  public async getProcessDefinitionByName(name: string): Promise<ProcessDefinitionRaw> {
 
     const query: Sequelize.FindOptions<IProcessDefinitionAttributes> = {
       where: {
