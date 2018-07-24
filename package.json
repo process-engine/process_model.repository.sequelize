@@ -14,7 +14,7 @@
   ],
   "dependencies": {
     "@essential-projects/sequelize_connection_manager": "^1.0.0",
-    "@process-engine/process_engine_contracts": "feature~provide_process_as_xml",
+    "@process-engine/process_engine_contracts": "^15.0.0",
     "loggerhythm": "^3.0.3",
     "pg": "^7.4.3",
     "pg-hstore": "^2.3.2",
