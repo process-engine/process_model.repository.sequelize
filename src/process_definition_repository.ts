@@ -1,4 +1,4 @@
-import {IProcessDefinitionRepository, ProcessDefinitionFromRepository} from '@process-engine/process_engine_contracts';
+import {IProcessDefinitionRepository, ProcessDefinitionRaw} from '@process-engine/process_engine_contracts';
 
 import {getConnection} from '@essential-projects/sequelize_connection_manager';
 
@@ -49,17 +49,30 @@ export class ProcessDefinitionRepository implements IProcessDefinitionRepository
     }
   }
 
-  public async getProcessDefinitions(): Promise<Array<ProcessDefinitionFromRepository>> {
+  public async getProcessDefinitions(): Promise<Array<ProcessDefinitionRaw>> {
     const result: Array<ProcessDefinition> = await this.processDefinition.findAll();
 
-    const runtimeProcessDefinitions: Array<ProcessDefinitionFromRepository> = result.map(this._convertToProcessDefinitionRuntimeObject);
+    const runtimeProcessDefinitions: Array<ProcessDefinitionRaw> = result.map(this._convertToProcessDefinitionRuntimeObject);
 
     return runtimeProcessDefinitions;
   }
 
-  private _convertToProcessDefinitionRuntimeObject(dataModel: ProcessDefinition): ProcessDefinitionFromRepository {
+  public async getProcessDefinitionByName(name: string): Promise<ProcessDefinitionRaw> {
 
-    const processDefinition: ProcessDefinitionFromRepository = new ProcessDefinitionFromRepository();
+    const query: Sequelize.FindOptions<IProcessDefinitionAttributes> = {
+      where: {
+        name: name,
+      },
+    };
+
+    const definition: ProcessDefinition = await this.processDefinition.findOne(query);
+
+    return definition;
+  }
+
+  private _convertToProcessDefinitionRuntimeObject(dataModel: ProcessDefinition): ProcessDefinitionRaw {
+
+    const processDefinition: ProcessDefinitionRaw = new ProcessDefinitionRaw();
     processDefinition.name = dataModel.name;
     processDefinition.xml = dataModel.xml;
 

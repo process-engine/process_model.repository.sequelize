@@ -3,7 +3,7 @@
   "publishConfig": {
     "registry": "https://www.npmjs.com"
   },
-  "version": "1.0.1",
+  "version": "2.0.0",
   "description": "Uses sequelize to access and manipulate process model data.",
   "license": "MIT",
   "main": "dist/commonjs/index.js",
@@ -14,7 +14,7 @@
   ],
   "dependencies": {
     "@essential-projects/sequelize_connection_manager": "^1.0.0",
-    "@process-engine/process_engine_contracts": "^14.0.0",
+    "@process-engine/process_engine_contracts": "feature~provide_process_as_xml",
     "loggerhythm": "^3.0.3",
     "pg": "^7.4.3",
     "pg-hstore": "^2.3.2",
