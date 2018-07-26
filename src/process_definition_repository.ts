@@ -1,3 +1,4 @@
+import {ConflictError} from '@essential-projects/errors_ts';
 import {IProcessDefinitionRepository, ProcessDefinitionRaw} from '@process-engine/process_engine_contracts';
 
 import {getConnection} from '@essential-projects/sequelize_connection_manager';
@@ -36,7 +37,7 @@ export class ProcessDefinitionRepository implements IProcessDefinitionRepository
 
     if (existingDefinition) {
       if (!overwriteExisting) {
-        throw new Error(`Process definition with the name '${name}' already exists!`);
+        throw new ConflictError(`Process definition with the name '${name}' already exists!`);
       } else {
         existingDefinition.xml = xml;
         await existingDefinition.save();
