@@ -1,7 +1,7 @@
 import * as bcrypt from 'bcrypt';
 import * as Sequelize from 'sequelize';
 
-import {ConflictError} from '@essential-projects/errors_ts';
+import {ConflictError, NotFoundError} from '@essential-projects/errors_ts';
 import {getConnection} from '@essential-projects/sequelize_connection_manager';
 
 import {IProcessDefinitionRepository, Runtime} from '@process-engine/process_engine_contracts';
@@ -50,7 +50,7 @@ export class ProcessDefinitionRepository implements IProcessDefinitionRepository
         throw new ConflictError(`Process definition with the name '${name}' already exists!`);
       }
 
-      // If the hashes are equal, then no changes were made.
+      // Hashes match: No changes were made.
       // Just call "save" to update the "updatedAt" timestamp and move on.
       if (existingDefinition.hash === processDefinitionHash) {
         await existingDefinition.save();
@@ -58,8 +58,8 @@ export class ProcessDefinitionRepository implements IProcessDefinitionRepository
         return;
       }
 
-      // Hashes are not equal: Changes were made.
-      // Create new entry.
+      // Hashes do not match: Changes were made.
+      // Create a new entry with the updated hash.
       const createParams: any = {
         name: name,
         xml: xml,
@@ -75,7 +75,6 @@ export class ProcessDefinitionRepository implements IProcessDefinitionRepository
         hash: processDefinitionHash,
       });
     }
-
   }
 
   public async getProcessDefinitions(): Promise<Array<Runtime.Types.ProcessDefinitionFromRepository>> {
@@ -100,9 +99,13 @@ export class ProcessDefinitionRepository implements IProcessDefinitionRepository
       order: [ [ 'createdAt', 'DESC' ]],
     };
 
-    const definition: ProcessDefinition = await this.processDefinition.findAll(query)[0];
+    const definitions: Array<ProcessDefinition> = await this.processDefinition.findAll(query);
 
-    return definition;
+    if (!definitions || definitions.length === 0) {
+      throw new NotFoundError(`Process definition with name "${name}" not found.`);
+    }
+
+    return definitions[0];
   }
 
   public async getByHash(hash: string): Promise<any> {
@@ -116,6 +119,10 @@ export class ProcessDefinitionRepository implements IProcessDefinitionRepository
     };
 
     const definition: ProcessDefinition = await this.processDefinition.findOne(query);
+
+    if (!definition) {
+      throw new NotFoundError(`Process definition with hash "${hash}" not found.`);
+    }
 
     return definition;
   }
