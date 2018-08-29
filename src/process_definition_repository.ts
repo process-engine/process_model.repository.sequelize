@@ -105,7 +105,9 @@ export class ProcessDefinitionRepository implements IProcessDefinitionRepository
       throw new NotFoundError(`Process definition with name "${name}" not found.`);
     }
 
-    return definitions[0];
+    const definitonRuntime: Runtime.Types.ProcessDefinitionFromRepository = this._convertToProcessDefinitionRuntimeObject(definitions[0]);
+
+    return definitonRuntime;
   }
 
   public async getByHash(hash: string): Promise<any> {
@@ -124,7 +126,9 @@ export class ProcessDefinitionRepository implements IProcessDefinitionRepository
       throw new NotFoundError(`Process definition with hash "${hash}" not found.`);
     }
 
-    return definition;
+    const definitonRuntime: Runtime.Types.ProcessDefinitionFromRepository = this._convertToProcessDefinitionRuntimeObject(definition);
+
+    return definitonRuntime;
   }
 
   /**
