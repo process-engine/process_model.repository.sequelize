@@ -28,15 +28,21 @@ export class ProcessDefinitionRepository implements IProcessDefinitionRepository
 
   public async persistProcessDefinitions(name: string, xml: string, overwriteExisting: boolean = true): Promise<void> {
 
-    const processDefinitionHash: string = await this._createHashForProcessDefinition(xml);
-
+    // Note:
+    // Unfortunately, sequelize doesn't have MIN/MAX operators for WHERE clauses.
+    // So in order to get the latest matching entry, we have to sort by the creation date and
+    // then cherry-pick the first entry.
     const query: Sequelize.FindOptions<IProcessDefinitionAttributes> = {
+      limit: 1,
       where: {
-        hash: processDefinitionHash,
+        name: name,
       },
+      order: [ [ 'createdAt', 'DESC' ]],
     };
 
-    const existingDefinition: ProcessDefinition = await this.processDefinition.findOne(query);
+    const existingDefinition: ProcessDefinition = await this.processDefinition.findAll(query)[0];
+
+    const processDefinitionHash: string = await this._createHashForProcessDefinition(xml);
 
     if (existingDefinition) {
 
@@ -44,9 +50,23 @@ export class ProcessDefinitionRepository implements IProcessDefinitionRepository
         throw new ConflictError(`Process definition with the name '${name}' already exists!`);
       }
 
-      existingDefinition.xml = xml;
+      // If the hashes are equal, then no changes were made.
+      // Just call "save" to update the "updatedAt" timestamp and move on.
+      if (existingDefinition.hash === processDefinitionHash) {
+        await existingDefinition.save();
 
-      await existingDefinition.save();
+        return;
+      }
+
+      // Hashes are not equal: Changes were made.
+      // Create new entry.
+      const createParams: any = {
+        name: name,
+        xml: xml,
+        hash: processDefinitionHash,
+      }
+
+      await this.processDefinition.create(createParams);
     } else {
 
       await this.processDefinition.create(<any> {
@@ -68,19 +88,27 @@ export class ProcessDefinitionRepository implements IProcessDefinitionRepository
 
   public async getProcessDefinitionByName(name: string): Promise<Runtime.Types.ProcessDefinitionFromRepository> {
 
+    // Note:
+    // For this use case, we only want to get the most up to date version of the process definition.
+    //
+    // See the comment in "persistProcessDefinitions" as to why we need to do it this way.
     const query: Sequelize.FindOptions<IProcessDefinitionAttributes> = {
+      limit: 1,
       where: {
         name: name,
       },
+      order: [ [ 'createdAt', 'DESC' ]],
     };
 
-    const definition: ProcessDefinition = await this.processDefinition.findOne(query);
+    const definition: ProcessDefinition = await this.processDefinition.findAll(query)[0];
 
     return definition;
   }
 
   public async getByHash(hash: string): Promise<any> {
 
+    // Note:
+    // Hashes are unique, so there's no need to use that order/limit crutch we have above.
     const query: Sequelize.FindOptions<IProcessDefinitionAttributes> = {
       where: {
         hash: hash,
@@ -125,6 +153,9 @@ export class ProcessDefinitionRepository implements IProcessDefinitionRepository
     const processDefinition: Runtime.Types.ProcessDefinitionFromRepository = new Runtime.Types.ProcessDefinitionFromRepository();
     processDefinition.name = dataModel.name;
     processDefinition.xml = dataModel.xml;
+    processDefinition.hash = dataModel.hash;
+    processDefinition.createdAt = dataModel.createdAt;
+    processDefinition.updatedAt = dataModel.updatedAt;
 
     return processDefinition;
   }
