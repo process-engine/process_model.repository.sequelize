@@ -4,6 +4,7 @@ export interface IProcessDefinitionAttributes {
   id: string;
   name: string;
   xml: string;
+  hash: string;
 }
 
 export type ProcessDefinition = Sequelize.Instance<IProcessDefinitionAttributes> & IProcessDefinitionAttributes;
@@ -22,6 +23,10 @@ export function defineProcessDefinition(sequelize: Sequelize.Sequelize): any {
     },
     xml: {
       // NOTE: "Sequelize.STRING" equals varchar(255), which is far too short for this.
+      type: Sequelize.TEXT,
+      allowNull: false,
+    },
+    hash: {
       type: Sequelize.TEXT,
       allowNull: false,
     },
