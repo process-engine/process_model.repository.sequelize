@@ -28,27 +28,34 @@ export class ProcessDefinitionRepository implements IProcessDefinitionRepository
 
   public async persistProcessDefinitions(name: string, xml: string, overwriteExisting: boolean = true): Promise<void> {
 
+    const processDefinitionHash: string = await this._createHashForProcessDefinition(xml);
+
     const query: Sequelize.FindOptions<IProcessDefinitionAttributes> = {
       where: {
-        name: name,
+        hash: processDefinitionHash,
       },
     };
 
     const existingDefinition: ProcessDefinition = await this.processDefinition.findOne(query);
 
     if (existingDefinition) {
+
       if (!overwriteExisting) {
         throw new ConflictError(`Process definition with the name '${name}' already exists!`);
-      } else {
-        existingDefinition.xml = xml;
-        await existingDefinition.save();
       }
+
+      existingDefinition.xml = xml;
+
+      await existingDefinition.save();
     } else {
+
       await this.processDefinition.create(<any> {
         name: name,
         xml: xml,
+        hash: processDefinitionHash,
       });
     }
+
   }
 
   public async getProcessDefinitions(): Promise<Array<Runtime.Types.ProcessDefinitionFromRepository>> {
@@ -85,6 +92,34 @@ export class ProcessDefinitionRepository implements IProcessDefinitionRepository
     return definition;
   }
 
+  /**
+   * Creates a hash for the given xml code.
+   *
+   * @param   xml The xml for which to generate a hash.
+   * @returns     The generated hash.
+   */
+  private async _createHashForProcessDefinition(xml: string): Promise<string> {
+
+    // NOTE:
+    // This value is based on the performance notes stated here:
+    // https://www.npmjs.com/package/bcrypt#a-note-on-rounds
+    // Process Definitions won't be persisted that often,
+    // so 10 rounds should be a reasonable compromise between security and speed.
+    const saltRounds: number = 10;
+
+    const hashedXml: string = await bcrypt.hashSync(xml, saltRounds);
+
+    return hashedXml;
+  }
+
+  /**
+   * Takes a ProcessDefinition object as it was retrieved from the database
+   * and convertes it into a Runtime object usable by the ProcessEngine.
+   *
+   * @param   dataModel The ProcessDefinition data retrieved from the database.
+   * @returns           The ProcessEngine runtime object describing a
+   *                    ProcessDefinition.
+   */
   private _convertToProcessDefinitionRuntimeObject(dataModel: ProcessDefinition): Runtime.Types.ProcessDefinitionFromRepository {
 
     const processDefinition: Runtime.Types.ProcessDefinitionFromRepository = new Runtime.Types.ProcessDefinitionFromRepository();
