@@ -1,5 +1,5 @@
 import {ConflictError} from '@essential-projects/errors_ts';
-import {IProcessDefinitionRepository, ProcessDefinitionRaw} from '@process-engine/process_engine_contracts';
+import {IProcessDefinitionRepository, Runtime} from '@process-engine/process_engine_contracts';
 
 import {getConnection} from '@essential-projects/sequelize_connection_manager';
 
@@ -50,15 +50,15 @@ export class ProcessDefinitionRepository implements IProcessDefinitionRepository
     }
   }
 
-  public async getProcessDefinitions(): Promise<Array<ProcessDefinitionRaw>> {
+  public async getProcessDefinitions(): Promise<Array<Runtime.Types.ProcessDefinitionFromRepository>> {
     const result: Array<ProcessDefinition> = await this.processDefinition.findAll();
 
-    const runtimeProcessDefinitions: Array<ProcessDefinitionRaw> = result.map(this._convertToProcessDefinitionRuntimeObject);
+    const runtimeProcessDefinitions: Array<Runtime.Types.ProcessDefinitionFromRepository> = result.map(this._convertToProcessDefinitionRuntimeObject);
 
     return runtimeProcessDefinitions;
   }
 
-  public async getProcessDefinitionByName(name: string): Promise<ProcessDefinitionRaw> {
+  public async getProcessDefinitionByName(name: string): Promise<Runtime.Types.ProcessDefinitionFromRepository> {
 
     const query: Sequelize.FindOptions<IProcessDefinitionAttributes> = {
       where: {
@@ -71,9 +71,9 @@ export class ProcessDefinitionRepository implements IProcessDefinitionRepository
     return definition;
   }
 
-  private _convertToProcessDefinitionRuntimeObject(dataModel: ProcessDefinition): ProcessDefinitionRaw {
+  private _convertToProcessDefinitionRuntimeObject(dataModel: ProcessDefinition): Runtime.Types.ProcessDefinitionFromRepository {
 
-    const processDefinition: ProcessDefinitionRaw = new ProcessDefinitionRaw();
+    const processDefinition: Runtime.Types.ProcessDefinitionFromRepository = new Runtime.Types.ProcessDefinitionFromRepository();
     processDefinition.name = dataModel.name;
     processDefinition.xml = dataModel.xml;
 
