@@ -71,6 +71,19 @@ export class ProcessDefinitionRepository implements IProcessDefinitionRepository
     return definition;
   }
 
+  public async getByHash(hash: string): Promise<any> {
+
+    const query: Sequelize.FindOptions<IProcessDefinitionAttributes> = {
+      where: {
+        hash: hash,
+      },
+    };
+
+    const definition: ProcessDefinition = await this.processDefinition.findOne(query);
+
+    return definition;
+  }
+
   private _convertToProcessDefinitionRuntimeObject(dataModel: ProcessDefinition): Runtime.Types.ProcessDefinitionFromRepository {
 
     const processDefinition: Runtime.Types.ProcessDefinitionFromRepository = new Runtime.Types.ProcessDefinitionFromRepository();
