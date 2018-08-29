@@ -1,9 +1,10 @@
-import {ConflictError} from '@essential-projects/errors_ts';
-import {IProcessDefinitionRepository, Runtime} from '@process-engine/process_engine_contracts';
+import * as bcrypt from 'bcrypt';
+import * as Sequelize from 'sequelize';
 
+import {ConflictError} from '@essential-projects/errors_ts';
 import {getConnection} from '@essential-projects/sequelize_connection_manager';
 
-import * as Sequelize from 'sequelize';
+import {IProcessDefinitionRepository, Runtime} from '@process-engine/process_engine_contracts';
 
 import {loadModels} from './model_loader';
 import {IProcessDefinitionAttributes, ProcessDefinition} from './schemas';
