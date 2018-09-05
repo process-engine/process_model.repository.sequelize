@@ -40,9 +40,12 @@ export class ProcessDefinitionRepository implements IProcessDefinitionRepository
       order: [ [ 'createdAt', 'DESC' ]],
     };
 
-    const existingDefinition: ProcessDefinition = await this.processDefinition.findAll(query)[0];
-
     const processDefinitionHash: string = await this._createHashForProcessDefinition(xml);
+
+    const existingDefinitions: Array<ProcessDefinition> = await this.processDefinition.findAll(query)[0];
+    const existingDefinition: ProcessDefinition = existingDefinitions.length > 0
+      ? existingDefinitions[0]
+      : undefined;
 
     if (existingDefinition) {
 
@@ -50,9 +53,10 @@ export class ProcessDefinitionRepository implements IProcessDefinitionRepository
         throw new ConflictError(`Process definition with the name '${name}' already exists!`);
       }
 
-      // Hashes match: No changes were made.
-      // Just call "save" to update the "updatedAt" timestamp and move on.
-      if (existingDefinition.hash === processDefinitionHash) {
+      const hashesMatch = await bcrypt.compare(xml, existingDefinition.hash);
+      if (hashesMatch) {
+        // Hashes match: No changes were made.
+        // Just call "save" to update the "updatedAt" timestamp and move on.
         await existingDefinition.save();
 
         return;
