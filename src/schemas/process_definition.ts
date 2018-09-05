@@ -24,7 +24,6 @@ export function defineProcessDefinition(sequelize: Sequelize.Sequelize): any {
     },
     name: {
       type: Sequelize.STRING,
-      unique: true,
       allowNull: false,
     },
     xml: {
