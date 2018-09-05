@@ -42,7 +42,7 @@ export class ProcessDefinitionRepository implements IProcessDefinitionRepository
 
     const processDefinitionHash: string = await this._createHashForProcessDefinition(xml);
 
-    const existingDefinitions: Array<ProcessDefinition> = await this.processDefinition.findAll(query)[0];
+    const existingDefinitions: Array<ProcessDefinition> = await this.processDefinition.findAll(query);
     const existingDefinition: ProcessDefinition = existingDefinitions.length > 0
       ? existingDefinitions[0]
       : undefined;
