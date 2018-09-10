@@ -3,7 +3,7 @@
   "publishConfig": {
     "registry": "https://www.npmjs.com"
   },
-  "version": "3.1.0",
+  "version": "3.1.1",
   "description": "Uses sequelize to access and manipulate process model data.",
   "license": "MIT",
   "main": "dist/commonjs/index.js",
@@ -21,7 +21,7 @@
     "sequelize": "4.38.0"
   },
   "devDependencies": {
-    "@essential-projects/tslint-config": "1.1.0",
+    "@essential-projects/tslint-config": "1.1.1",
     "@types/bcryptjs": "2.4.1",
     "@types/node": "8.10.10",
     "@types/sequelize": "4.27.23",
