@@ -53,7 +53,8 @@ export class ProcessDefinitionRepository implements IProcessDefinitionRepository
         throw new ConflictError(`Process definition with the name '${name}' already exists!`);
       }
 
-      const hashesMatch = await bcrypt.compare(xml, existingDefinition.hash);
+      // NOTE: bcrypt.compare() is broken. It ALWAYS returns true, no matter what you throw at it.
+      const hashesMatch: boolean = processDefinitionHash === existingDefinition.hash;
       if (hashesMatch) {
         // Hashes match: No changes were made.
         // Just call "save" to update the "updatedAt" timestamp and move on.
