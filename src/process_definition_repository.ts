@@ -1,4 +1,5 @@
 import * as bcrypt from 'bcryptjs';
+import * as bluebird from 'bluebird';
 import * as Sequelize from 'sequelize';
 
 import {ConflictError, NotFoundError} from '@essential-projects/errors_ts';
@@ -84,12 +85,25 @@ export class ProcessDefinitionRepository implements IProcessDefinitionRepository
 
   public async getProcessDefinitions(): Promise<Array<Runtime.Types.ProcessDefinitionFromRepository>> {
 
-    const result: Array<ProcessDefinition> = await this.processDefinition.findAll({
-      order: [ [ 'createdAt', 'DESC' ]],
+    // Get all unique names
+    const names: Array<ProcessDefinition> = await this.processDefinition.findAll({
+      attributes: ['name'],
       group: 'name',
     });
 
-    const runtimeProcessDefinitions: Array<Runtime.Types.ProcessDefinitionFromRepository> = result.map(this._convertToProcessDefinitionRuntimeObject);
+    const namesAsString: Array<string> = names.map((entry: ProcessDefinition): string => {
+      return entry.name;
+    });
+
+    // Get the most recent definiton for each name.
+    //
+    // NOTE:
+    // We cannot simply use something like "GROUP BY name", because Postgres won't allow it on non-index columns.
+    const processDefinitions: Array<ProcessDefinition> =
+      await bluebird.map<any, ProcessDefinition>(namesAsString, this.getProcessDefinitionByName.bind(this));
+
+    const runtimeProcessDefinitions: Array<Runtime.Types.ProcessDefinitionFromRepository> =
+      processDefinitions.map(this._convertToProcessDefinitionRuntimeObject);
 
     return runtimeProcessDefinitions;
   }
