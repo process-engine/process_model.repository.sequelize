@@ -69,7 +69,7 @@ export class ProcessDefinitionRepository implements IProcessDefinitionRepository
         name: name,
         xml: xml,
         hash: processDefinitionHash,
-      }
+      };
 
       await this.processDefinition.create(createParams);
     } else {
@@ -83,7 +83,11 @@ export class ProcessDefinitionRepository implements IProcessDefinitionRepository
   }
 
   public async getProcessDefinitions(): Promise<Array<Runtime.Types.ProcessDefinitionFromRepository>> {
-    const result: Array<ProcessDefinition> = await this.processDefinition.findAll();
+
+    const result: Array<ProcessDefinition> = await this.processDefinition.findAll({
+      order: [ [ 'createdAt', 'DESC' ]],
+      group: 'name',
+    });
 
     const runtimeProcessDefinitions: Array<Runtime.Types.ProcessDefinitionFromRepository> = result.map(this._convertToProcessDefinitionRuntimeObject);
 
