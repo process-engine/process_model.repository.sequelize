@@ -151,9 +151,13 @@ export class ProcessDefinitionRepository implements IProcessDefinitionRepository
     // NOTE:
     // This value is based on the performance notes stated here:
     // https://www.npmjs.com/package/bcrypt#a-note-on-rounds
+    //
+    // and the fact, that bcryptjs is stated to be about 30% slower:
+    // https://www.npmjs.com/package/bcryptjs
+    //
     // Process Definitions won't be persisted that often,
-    // so 10 rounds should be a reasonable compromise between security and speed.
-    const saltRounds: number = 10;
+    // so 4 rounds should be a reasonable compromise between security and speed.
+    const saltRounds: number = 4;
 
     const hashedXml: string = await bcrypt.hashSync(xml, saltRounds);
 
