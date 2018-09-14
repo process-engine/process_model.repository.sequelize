@@ -1,4 +1,5 @@
 import * as bcrypt from 'bcryptjs';
+import * as bluebird from 'bluebird';
 import * as Sequelize from 'sequelize';
 
 import {ConflictError, NotFoundError} from '@essential-projects/errors_ts';
@@ -69,7 +70,7 @@ export class ProcessDefinitionRepository implements IProcessDefinitionRepository
         name: name,
         xml: xml,
         hash: processDefinitionHash,
-      }
+      };
 
       await this.processDefinition.create(createParams);
     } else {
@@ -83,9 +84,26 @@ export class ProcessDefinitionRepository implements IProcessDefinitionRepository
   }
 
   public async getProcessDefinitions(): Promise<Array<Runtime.Types.ProcessDefinitionFromRepository>> {
-    const result: Array<ProcessDefinition> = await this.processDefinition.findAll();
 
-    const runtimeProcessDefinitions: Array<Runtime.Types.ProcessDefinitionFromRepository> = result.map(this._convertToProcessDefinitionRuntimeObject);
+    // Get all unique names
+    const names: Array<ProcessDefinition> = await this.processDefinition.findAll({
+      attributes: ['name'],
+      group: 'name',
+    });
+
+    const namesAsString: Array<string> = names.map((entry: ProcessDefinition): string => {
+      return entry.name;
+    });
+
+    // Get the most recent definiton for each name.
+    //
+    // NOTE:
+    // We cannot simply use something like "GROUP BY name", because Postgres won't allow it on non-index columns.
+    const processDefinitions: Array<ProcessDefinition> =
+      await bluebird.map<any, ProcessDefinition>(namesAsString, this.getProcessDefinitionByName.bind(this));
+
+    const runtimeProcessDefinitions: Array<Runtime.Types.ProcessDefinitionFromRepository> =
+      processDefinitions.map(this._convertToProcessDefinitionRuntimeObject);
 
     return runtimeProcessDefinitions;
   }
@@ -147,9 +165,13 @@ export class ProcessDefinitionRepository implements IProcessDefinitionRepository
     // NOTE:
     // This value is based on the performance notes stated here:
     // https://www.npmjs.com/package/bcrypt#a-note-on-rounds
+    //
+    // and the fact, that bcryptjs is stated to be about 30% slower:
+    // https://www.npmjs.com/package/bcryptjs
+    //
     // Process Definitions won't be persisted that often,
-    // so 10 rounds should be a reasonable compromise between security and speed.
-    const saltRounds: number = 10;
+    // so 4 rounds should be a reasonable compromise between security and speed.
+    const saltRounds: number = 4;
 
     const hashedXml: string = await bcrypt.hashSync(xml, saltRounds);
 
