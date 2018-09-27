@@ -144,7 +144,8 @@ export class ProcessDefinitionRepository implements IProcessDefinitionRepository
 
     const definitions: Array<ProcessDefinition> = await this.processDefinition.findAll(query);
 
-    if (!definitions || definitions.length === 0) {
+    const noDefinitionsFound: boolean = !definitions || definitions.length === 0;
+    if (noDefinitionsFound) {
       throw new NotFoundError(`Process definition with name "${name}" not found.`);
     }
 
