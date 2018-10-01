@@ -133,6 +133,28 @@ export class ProcessDefinitionRepository implements IProcessDefinitionRepository
     return definitonRuntime;
   }
 
+  public async getHistoryByName(name: string): Promise<Array<Runtime.Types.ProcessDefinitionFromRepository>> {
+
+    const query: Sequelize.FindOptions<IProcessDefinitionAttributes> = {
+      where: {
+        name: name,
+      },
+      order: [ [ 'createdAt', 'DESC' ]],
+    };
+
+    const definitions: Array<ProcessDefinition> = await this.processDefinition.findAll(query);
+
+    const noDefinitionsFound: boolean = !definitions || definitions.length === 0;
+    if (noDefinitionsFound) {
+      throw new NotFoundError(`Process definition with name "${name}" not found.`);
+    }
+
+    const definitonsRuntime: Array<Runtime.Types.ProcessDefinitionFromRepository> =
+      definitions.map(this._convertToProcessDefinitionRuntimeObject.bind(this));
+
+    return definitonsRuntime;
+  }
+
   public async getByHash(hash: string): Promise<any> {
 
     // Note:
