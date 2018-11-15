@@ -3,7 +3,7 @@
   "publishConfig": {
     "registry": "https://www.npmjs.com"
   },
-  "version": "3.3.0",
+  "version": "3.4.0",
   "description": "Uses sequelize to access and manipulate process model data.",
   "license": "MIT",
   "main": "dist/commonjs/index.js",
