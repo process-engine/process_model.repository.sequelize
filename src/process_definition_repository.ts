@@ -133,6 +133,16 @@ export class ProcessDefinitionRepository implements IProcessDefinitionRepository
     return definitonRuntime;
   }
 
+  public async deleteProcessDefinitionById(processModelId: string): Promise<void> {
+    const queryParams: Sequelize.DestroyOptions = {
+      where: {
+        name: processModelId,
+      },
+    };
+
+    await this.processDefinition.destroy(queryParams);
+  }
+
   public async getHistoryByName(name: string): Promise<Array<Runtime.Types.ProcessDefinitionFromRepository>> {
 
     const query: Sequelize.FindOptions<IProcessDefinitionAttributes> = {
