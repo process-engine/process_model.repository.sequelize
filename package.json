@@ -14,7 +14,7 @@
   ],
   "dependencies": {
     "@essential-projects/errors_ts": "~1.4.0",
-    "@essential-projects/sequelize_connection_manager": "feature~upgrade_sequelize",
+    "@essential-projects/sequelize_connection_manager": "~2.1.0",
     "@process-engine/process_engine_contracts": "~34.1.0",
     "bcryptjs": "~2.4.3",
     "loggerhythm": "~3.0.3",
