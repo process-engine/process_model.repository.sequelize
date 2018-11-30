@@ -3,7 +3,7 @@ import * as bluebird from 'bluebird';
 import * as Sequelize from 'sequelize';
 
 import {ConflictError, NotFoundError} from '@essential-projects/errors_ts';
-import {getConnection} from '@essential-projects/sequelize_connection_manager';
+import {SequelizeConnectionManager} from '@essential-projects/sequelize_connection_manager';
 
 import {IProcessDefinitionRepository, Runtime} from '@process-engine/process_engine_contracts';
 
@@ -15,16 +15,20 @@ export class ProcessDefinitionRepository implements IProcessDefinitionRepository
   public config: Sequelize.Options;
 
   private _processDefinition: Sequelize.Model<ProcessDefinition, IProcessDefinitionAttributes>;
+  private _sequelize: Sequelize.Sequelize;
+  private _connectionManager: SequelizeConnectionManager;
 
-  private sequelize: Sequelize.Sequelize;
+  constructor(connectionManager: SequelizeConnectionManager) {
+    this._connectionManager = connectionManager;
+  }
 
   private get processDefinition(): Sequelize.Model<ProcessDefinition, IProcessDefinitionAttributes> {
     return this._processDefinition;
   }
 
   public async initialize(): Promise<void> {
-    this.sequelize = await getConnection(this.config);
-    this._processDefinition = await loadModels(this.sequelize);
+    this._sequelize = await this._connectionManager.getConnection(this.config);
+    this._processDefinition = await loadModels(this._sequelize);
   }
 
   public async persistProcessDefinitions(name: string, xml: string, overwriteExisting: boolean = true): Promise<void> {

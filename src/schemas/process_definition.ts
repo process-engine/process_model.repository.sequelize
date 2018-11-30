@@ -1,7 +1,6 @@
 import * as Sequelize from 'sequelize';
 
 export interface IProcessDefinitionAttributes {
-  id: string;
   name: string;
   xml: string;
   hash: string;
@@ -17,11 +16,6 @@ export type ProcessDefinition = Sequelize.Instance<IProcessDefinitionAttributes>
 
 export function defineProcessDefinition(sequelize: Sequelize.Sequelize): any {
   const attributes: SequelizeAttributes<IProcessDefinitionAttributes> = {
-    id: {
-      type: Sequelize.UUID,
-      primaryKey: true,
-      defaultValue: Sequelize.UUIDV4,
-    },
     name: {
       type: Sequelize.STRING,
       allowNull: false,

@@ -5,6 +5,7 @@ const ProcessDefinitionRepository = require('./dist/commonjs/index').ProcessDefi
 function registerInContainer(container) {
 
   container.register('ProcessDefinitionRepository', ProcessDefinitionRepository)
+    .dependencies('SequelizeConnectionManager')
     .configure('process_engine:process_model_repository')
     .singleton();
 }
