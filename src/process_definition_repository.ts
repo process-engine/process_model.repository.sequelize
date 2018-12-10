@@ -1,7 +1,9 @@
 import * as bcrypt from 'bcryptjs';
 import * as bluebird from 'bluebird';
+import {Logger} from 'loggerhythm';
 import * as Sequelize from 'sequelize';
 
+import {IDisposable} from '@essential-projects/bootstrapper_contracts';
 import {ConflictError, NotFoundError} from '@essential-projects/errors_ts';
 import {SequelizeConnectionManager} from '@essential-projects/sequelize_connection_manager';
 
@@ -10,7 +12,9 @@ import {IProcessDefinitionRepository, Runtime} from '@process-engine/process_eng
 import {loadModels} from './model_loader';
 import {IProcessDefinitionAttributes, ProcessDefinition} from './schemas';
 
-export class ProcessDefinitionRepository implements IProcessDefinitionRepository {
+const logger: Logger = new Logger('processengine:persistence:process_definition_repository');
+
+export class ProcessDefinitionRepository implements IProcessDefinitionRepository, IDisposable {
 
   public config: Sequelize.Options;
 
@@ -27,8 +31,23 @@ export class ProcessDefinitionRepository implements IProcessDefinitionRepository
   }
 
   public async initialize(): Promise<void> {
+    logger.verbose('Initializing Sequelize connection and loading models...');
+    const connectionAlreadyEstablished: boolean = this._sequelize !== undefined;
+    if (connectionAlreadyEstablished) {
+      logger.verbose('Repository already initialized.');
+
+      return;
+    }
     this._sequelize = await this._connectionManager.getConnection(this.config);
     this._processDefinition = await loadModels(this._sequelize);
+    logger.verbose('Done.');
+  }
+
+  public async dispose(): Promise<void> {
+    logger.verbose('Disposing connection');
+    await this._connectionManager.destroyConnection(this.config);
+    this._sequelize = undefined;
+    logger.verbose('done');
   }
 
   public async persistProcessDefinitions(name: string, xml: string, overwriteExisting: boolean = true): Promise<void> {
