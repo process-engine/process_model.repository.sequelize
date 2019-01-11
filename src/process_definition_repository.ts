@@ -73,7 +73,8 @@ export class ProcessDefinitionRepository implements IProcessDefinitionRepository
         ? existingDefinitions[0]
         : undefined;
 
-      if (existingDefinition) {
+      const noExistingDefinitionExists: boolean = existingDefinition === undefined;
+      if (noExistingDefinitionExists) {
         if (!overwriteExisting) {
           throw new ConflictError(`Process definition with the name '${name}' already exists!`);
         }
