@@ -87,7 +87,7 @@ export class ProcessDefinitionRepository implements IProcessDefinitionRepository
 
       // Hashes do not match: Changes were made.
       // Create a new entry with the updated hash.
-      const createParams: any = {
+      const createParams: IProcessDefinitionAttributes = {
         name: name,
         xml: xml,
         hash: newProcessDefinitionHash,
@@ -96,7 +96,7 @@ export class ProcessDefinitionRepository implements IProcessDefinitionRepository
       await this.processDefinition.create(createParams);
     } else {
 
-      await this.processDefinition.create(<any> {
+      await this.processDefinition.create({
         name: name,
         xml: xml,
         hash: newProcessDefinitionHash,
