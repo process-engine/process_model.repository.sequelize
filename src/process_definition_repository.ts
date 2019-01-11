@@ -56,7 +56,7 @@ export class ProcessDefinitionRepository implements IProcessDefinitionRepository
     // Unfortunately, sequelize doesn't have MIN/MAX operators for WHERE clauses.
     // So in order to get the latest matching entry, we have to sort by the creation date and
     // then cherry-pick the first entry.
-    const query: Sequelize.FindOptions<IProcessDefinitionAttributes> = {
+    const findExistingDefinitionsQuery: Sequelize.FindOptions<IProcessDefinitionAttributes> = {
       limit: 1,
       where: {
         name: name,
@@ -64,21 +64,19 @@ export class ProcessDefinitionRepository implements IProcessDefinitionRepository
       order: [ [ 'createdAt', 'DESC' ]],
     };
 
-    const processDefinitionHash: string = await this._createHashForProcessDefinition(xml);
+    const newProcessDefinitionHash: string = await this._createHashForProcessDefinition(xml);
 
-    const existingDefinitions: Array<ProcessDefinition> = await this.processDefinition.findAll(query);
+    const existingDefinitions: Array<ProcessDefinition> = await this.processDefinition.findAll(findExistingDefinitionsQuery);
     const existingDefinition: ProcessDefinition = existingDefinitions.length > 0
       ? existingDefinitions[0]
       : undefined;
 
     if (existingDefinition) {
-
       if (!overwriteExisting) {
         throw new ConflictError(`Process definition with the name '${name}' already exists!`);
       }
 
-      // NOTE: bcrypt.compare() is broken. It ALWAYS returns true, no matter what you throw at it.
-      const hashesMatch: boolean = processDefinitionHash === existingDefinition.hash;
+      const hashesMatch: boolean = newProcessDefinitionHash === existingDefinition.hash;
       if (hashesMatch) {
         // Hashes match: No changes were made.
         // Just call "save" to update the "updatedAt" timestamp and move on.
@@ -92,7 +90,7 @@ export class ProcessDefinitionRepository implements IProcessDefinitionRepository
       const createParams: any = {
         name: name,
         xml: xml,
-        hash: processDefinitionHash,
+        hash: newProcessDefinitionHash,
       };
 
       await this.processDefinition.create(createParams);
@@ -101,7 +99,7 @@ export class ProcessDefinitionRepository implements IProcessDefinitionRepository
       await this.processDefinition.create(<any> {
         name: name,
         xml: xml,
-        hash: processDefinitionHash,
+        hash: newProcessDefinitionHash,
       });
     }
   }
