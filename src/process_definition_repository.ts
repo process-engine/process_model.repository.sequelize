@@ -52,62 +52,55 @@ export class ProcessDefinitionRepository implements IProcessDefinitionRepository
 
   public async persistProcessDefinitions(name: string, xml: string, overwriteExisting: boolean = true): Promise<void> {
 
-    await this._sequelize.transaction(async(persistTransaction: Sequelize.Transaction): Promise<void> => {
-      // Note:
-      // Unfortunately, sequelize doesn't have MIN/MAX operators for WHERE clauses.
-      // So in order to get the latest matching entry, we have to sort by the creation date and
-      // then cherry-pick the first entry.
-      const findExistingDefinitionsQuery: Sequelize.FindOptions<IProcessDefinitionAttributes> = {
-        limit: 1,
-        where: {
-          name: name,
-        },
-        transaction: persistTransaction,
-        order: [ [ 'createdAt', 'DESC' ]],
-      };
+    // Note:
+    // Unfortunately, sequelize doesn't have MIN/MAX operators for WHERE clauses.
+    // So in order to get the latest matching entry, we have to sort by the creation date and
+    // then cherry-pick the first entry.
+    const findExistingDefinitionsQuery: Sequelize.FindOptions<IProcessDefinitionAttributes> = {
+      limit: 1,
+      where: {
+        name: name,
+      },
+      order: [ [ 'createdAt', 'DESC' ]],
+    };
 
-      const newProcessDefinitionHash: string = await this._createHashForProcessDefinition(xml);
+    const newProcessDefinitionHash: string = await this._createHashForProcessDefinition(xml);
 
-      const existingDefinitions: Array<ProcessDefinition> = await this.processDefinition.findAll(findExistingDefinitionsQuery);
-      const existingDefinition: ProcessDefinition = existingDefinitions.length > 0
-        ? existingDefinitions[0]
-        : undefined;
+    const existingDefinitions: Array<ProcessDefinition> = await this.processDefinition.findAll(findExistingDefinitionsQuery);
+    const existingDefinition: ProcessDefinition = existingDefinitions.length > 0
+      ? existingDefinitions[0]
+      : undefined;
 
-      const definitionAlreadyExists: boolean = existingDefinition !== undefined;
-      if (definitionAlreadyExists) {
-        if (!overwriteExisting) {
-          throw new ConflictError(`Process definition with the name '${name}' already exists!`);
-        }
-
-        const hashesMatch: boolean = newProcessDefinitionHash === existingDefinition.hash;
-        if (hashesMatch) {
-          // Hashes match: No changes were made.
-          // Just call "save" to update the "updatedAt" timestamp and move on.
-          await existingDefinition.save({transaction: persistTransaction});
-
-          return;
-        }
-
-        // Hashes do not match: Changes were made.
-        // Create a new entry with the updated hash.
-        await this.processDefinition.create({
-          name: name,
-          xml: xml,
-          hash: newProcessDefinitionHash,
-        }, {
-          transaction: persistTransaction,
-        });
-      } else {
-
-        await this.processDefinition.create({
-          name: name,
-          xml: xml,
-          hash: newProcessDefinitionHash,
-        }, {
-          transaction: persistTransaction,
-        });
+    const definitionAlreadyExists: boolean = existingDefinition !== undefined;
+    if (definitionAlreadyExists) {
+      if (!overwriteExisting) {
+        throw new ConflictError(`Process definition with the name '${name}' already exists!`);
       }
-    });
+
+      const hashesMatch: boolean = newProcessDefinitionHash === existingDefinition.hash;
+      if (hashesMatch) {
+        // Hashes match: No changes were made.
+        // Just call "save" to update the "updatedAt" timestamp and move on.
+        await existingDefinition.save();
+
+        return;
+      }
+
+      // Hashes do not match: Changes were made.
+      // Create a new entry with the updated hash.
+      await this.processDefinition.create({
+        name: name,
+        xml: xml,
+        hash: newProcessDefinitionHash,
+      });
+    } else {
+
+      await this.processDefinition.create({
+        name: name,
+        xml: xml,
+        hash: newProcessDefinitionHash,
+      });
+    }
   }
 
   public async getProcessDefinitions(): Promise<Array<Runtime.Types.ProcessDefinitionFromRepository>> {
