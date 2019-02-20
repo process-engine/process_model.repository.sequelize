@@ -12,7 +12,7 @@ export interface IProcessDefinitionAttributes {
   updatedAt?: Date;
 }
 
-export type ProcessDefinition = Sequelize.Instance<IProcessDefinitionAttributes> & IProcessDefinitionAttributes;
+export type ProcessDefinitionModel = Sequelize.Instance<IProcessDefinitionAttributes> & IProcessDefinitionAttributes;
 
 export function defineProcessDefinition(sequelize: Sequelize.Sequelize): any {
   const attributes: SequelizeAttributes<IProcessDefinitionAttributes> = {
@@ -31,5 +31,5 @@ export function defineProcessDefinition(sequelize: Sequelize.Sequelize): any {
     },
   };
 
-  return sequelize.define<ProcessDefinition, IProcessDefinitionAttributes>('ProcessDefinition', attributes);
+  return sequelize.define<ProcessDefinitionModel, IProcessDefinitionAttributes>('ProcessDefinition', attributes);
 }
