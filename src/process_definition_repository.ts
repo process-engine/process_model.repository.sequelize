@@ -11,7 +11,7 @@ import {SequelizeConnectionManager} from '@essential-projects/sequelize_connecti
 
 import {IProcessDefinitionRepository, ProcessDefinitionFromRepository} from '@process-engine/process_model.contracts';
 
-import {ProcessDefinition} from './schemas';
+import {ProcessDefinitionModel} from './schemas';
 
 const logger: Logger = new Logger('processengine:persistence:process_definition_repository');
 
@@ -36,7 +36,7 @@ export class ProcessDefinitionRepository implements IProcessDefinitionRepository
     }
     this._sequelize = await this._connectionManager.getConnection(this.config);
 
-    this._sequelize.addModels([ProcessDefinition]);
+    this._sequelize.addModels([ProcessDefinitionModel]);
     await this._sequelize.sync();
 
     logger.verbose('Done.');
@@ -65,8 +65,8 @@ export class ProcessDefinitionRepository implements IProcessDefinitionRepository
 
     const newProcessDefinitionHash: string = await this._createHashForProcessDefinition(xml);
 
-    const existingDefinitions: Array<ProcessDefinition> = await ProcessDefinition.findAll(findExistingDefinitionsQuery);
-    const existingDefinition: ProcessDefinition = existingDefinitions.length > 0
+    const existingDefinitions: Array<ProcessDefinitionModel> = await ProcessDefinitionModel.findAll(findExistingDefinitionsQuery);
+    const existingDefinition: ProcessDefinitionModel = existingDefinitions.length > 0
       ? existingDefinitions[0]
       : undefined;
 
@@ -87,14 +87,14 @@ export class ProcessDefinitionRepository implements IProcessDefinitionRepository
 
       // Hashes do not match: Changes were made.
       // Create a new entry with the updated hash.
-      await ProcessDefinition.create({
+      await ProcessDefinitionModel.create({
         name: name,
         xml: xml,
         hash: newProcessDefinitionHash,
       });
     } else {
 
-      await ProcessDefinition.create({
+      await ProcessDefinitionModel.create({
         name: name,
         xml: xml,
         hash: newProcessDefinitionHash,
@@ -105,12 +105,12 @@ export class ProcessDefinitionRepository implements IProcessDefinitionRepository
   public async getProcessDefinitions(): Promise<Array<ProcessDefinitionFromRepository>> {
 
     // Get all unique names
-    const names: Array<ProcessDefinition> = await ProcessDefinition.findAll({
+    const names: Array<ProcessDefinitionModel> = await ProcessDefinitionModel.findAll({
       attributes: ['name'],
       group: 'name',
     });
 
-    const namesAsString: Array<string> = names.map((entry: ProcessDefinition): string => {
+    const namesAsString: Array<string> = names.map((entry: ProcessDefinitionModel): string => {
       return entry.name;
     });
 
@@ -118,8 +118,8 @@ export class ProcessDefinitionRepository implements IProcessDefinitionRepository
     //
     // NOTE:
     // We cannot simply use something like "GROUP BY name", because Postgres won't allow it on non-index columns.
-    const processDefinitions: Array<ProcessDefinition> =
-      await bluebird.map<any, ProcessDefinition>(namesAsString, this.getProcessDefinitionByName.bind(this));
+    const processDefinitions: Array<ProcessDefinitionModel> =
+      await bluebird.map<any, ProcessDefinitionModel>(namesAsString, this.getProcessDefinitionByName.bind(this));
 
     const runtimeProcessDefinitions: Array<ProcessDefinitionFromRepository> =
       processDefinitions.map(this._convertToProcessDefinitionRuntimeObject);
@@ -141,7 +141,7 @@ export class ProcessDefinitionRepository implements IProcessDefinitionRepository
       order: [ [ 'createdAt', 'DESC' ]],
     };
 
-    const definitions: Array<ProcessDefinition> = await ProcessDefinition.findAll(query);
+    const definitions: Array<ProcessDefinitionModel> = await ProcessDefinitionModel.findAll(query);
 
     if (!definitions || definitions.length === 0) {
       throw new NotFoundError(`Process definition with name "${name}" not found.`);
@@ -159,7 +159,7 @@ export class ProcessDefinitionRepository implements IProcessDefinitionRepository
       },
     };
 
-    await ProcessDefinition.destroy(queryParams);
+    await ProcessDefinitionModel.destroy(queryParams);
   }
 
   public async getHistoryByName(name: string): Promise<Array<ProcessDefinitionFromRepository>> {
@@ -171,7 +171,7 @@ export class ProcessDefinitionRepository implements IProcessDefinitionRepository
       order: [ [ 'createdAt', 'DESC' ]],
     };
 
-    const definitions: Array<ProcessDefinition> = await ProcessDefinition.findAll(query);
+    const definitions: Array<ProcessDefinitionModel> = await ProcessDefinitionModel.findAll(query);
 
     const noDefinitionsFound: boolean = !definitions || definitions.length === 0;
     if (noDefinitionsFound) {
@@ -194,7 +194,7 @@ export class ProcessDefinitionRepository implements IProcessDefinitionRepository
       },
     };
 
-    const definition: ProcessDefinition = await ProcessDefinition.findOne(query);
+    const definition: ProcessDefinitionModel = await ProcessDefinitionModel.findOne(query);
 
     if (!definition) {
       throw new NotFoundError(`Process definition with hash "${hash}" not found.`);
@@ -237,7 +237,7 @@ export class ProcessDefinitionRepository implements IProcessDefinitionRepository
    * @returns           The ProcessEngine runtime object describing a
    *                    ProcessDefinition.
    */
-  private _convertToProcessDefinitionRuntimeObject(dataModel: ProcessDefinition): ProcessDefinitionFromRepository {
+  private _convertToProcessDefinitionRuntimeObject(dataModel: ProcessDefinitionModel): ProcessDefinitionFromRepository {
 
     const processDefinition: ProcessDefinitionFromRepository = new ProcessDefinitionFromRepository();
     processDefinition.name = dataModel.name;
