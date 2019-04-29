@@ -3,16 +3,16 @@ import {AllowNull, Column, CreatedAt, DataType, Model, Table, UpdatedAt} from 's
 @Table({modelName: 'ProcessDefinition', tableName: 'ProcessDefinition', version: true})
 export class ProcessDefinitionModel extends Model<ProcessDefinitionModel> {
 
-  @Column
   @AllowNull(false)
+  @Column
   public name: string;
 
-  @Column({type: DataType.TEXT})
   @AllowNull(false)
+  @Column({type: DataType.TEXT})
   public xml: string;
 
-  @Column({type: DataType.TEXT})
   @AllowNull(false)
+  @Column({type: DataType.TEXT})
   public hash: string;
 
   @CreatedAt
