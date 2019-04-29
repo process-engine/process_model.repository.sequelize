@@ -1,7 +1,9 @@
 import * as bcrypt from 'bcryptjs';
 import * as bluebird from 'bluebird';
 import {Logger} from 'loggerhythm';
-import * as Sequelize from 'sequelize';
+
+import {DestroyOptions, FindOptions} from 'sequelize';
+import {Sequelize, SequelizeOptions} from 'sequelize-typescript';
 
 import {IDisposable} from '@essential-projects/bootstrapper_contracts';
 import {ConflictError, NotFoundError} from '@essential-projects/errors_ts';
@@ -9,25 +11,19 @@ import {SequelizeConnectionManager} from '@essential-projects/sequelize_connecti
 
 import {IProcessDefinitionRepository, ProcessDefinitionFromRepository} from '@process-engine/process_model.contracts';
 
-import {loadModels} from './model_loader';
-import {IProcessDefinitionAttributes, ProcessDefinitionModel} from './schemas';
+import {ProcessDefinition} from './schemas';
 
 const logger: Logger = new Logger('processengine:persistence:process_definition_repository');
 
 export class ProcessDefinitionRepository implements IProcessDefinitionRepository, IDisposable {
 
-  public config: Sequelize.Options;
+  public config: SequelizeOptions;
 
-  private _processDefinition: Sequelize.Model<ProcessDefinitionModel, IProcessDefinitionAttributes>;
-  private _sequelize: Sequelize.Sequelize;
+  private _sequelize: Sequelize;
   private _connectionManager: SequelizeConnectionManager;
 
   constructor(connectionManager: SequelizeConnectionManager) {
     this._connectionManager = connectionManager;
-  }
-
-  private get processDefinition(): Sequelize.Model<ProcessDefinitionModel, IProcessDefinitionAttributes> {
-    return this._processDefinition;
   }
 
   public async initialize(): Promise<void> {
@@ -39,7 +35,10 @@ export class ProcessDefinitionRepository implements IProcessDefinitionRepository
       return;
     }
     this._sequelize = await this._connectionManager.getConnection(this.config);
-    this._processDefinition = await loadModels(this._sequelize);
+
+    this._sequelize.addModels([ProcessDefinition]);
+    await this._sequelize.sync();
+
     logger.verbose('Done.');
   }
 
@@ -56,7 +55,7 @@ export class ProcessDefinitionRepository implements IProcessDefinitionRepository
     // Unfortunately, sequelize doesn't have MIN/MAX operators for WHERE clauses.
     // So in order to get the latest matching entry, we have to sort by the creation date and
     // then cherry-pick the first entry.
-    const findExistingDefinitionsQuery: Sequelize.FindOptions<IProcessDefinitionAttributes> = {
+    const findExistingDefinitionsQuery: FindOptions = {
       limit: 1,
       where: {
         name: name,
@@ -66,8 +65,8 @@ export class ProcessDefinitionRepository implements IProcessDefinitionRepository
 
     const newProcessDefinitionHash: string = await this._createHashForProcessDefinition(xml);
 
-    const existingDefinitions: Array<ProcessDefinitionModel> = await this.processDefinition.findAll(findExistingDefinitionsQuery);
-    const existingDefinition: ProcessDefinitionModel = existingDefinitions.length > 0
+    const existingDefinitions: Array<ProcessDefinition> = await ProcessDefinition.findAll(findExistingDefinitionsQuery);
+    const existingDefinition: ProcessDefinition = existingDefinitions.length > 0
       ? existingDefinitions[0]
       : undefined;
 
@@ -88,14 +87,14 @@ export class ProcessDefinitionRepository implements IProcessDefinitionRepository
 
       // Hashes do not match: Changes were made.
       // Create a new entry with the updated hash.
-      await this.processDefinition.create({
+      await ProcessDefinition.create({
         name: name,
         xml: xml,
         hash: newProcessDefinitionHash,
       });
     } else {
 
-      await this.processDefinition.create({
+      await ProcessDefinition.create({
         name: name,
         xml: xml,
         hash: newProcessDefinitionHash,
@@ -106,12 +105,12 @@ export class ProcessDefinitionRepository implements IProcessDefinitionRepository
   public async getProcessDefinitions(): Promise<Array<ProcessDefinitionFromRepository>> {
 
     // Get all unique names
-    const names: Array<ProcessDefinitionModel> = await this.processDefinition.findAll({
+    const names: Array<ProcessDefinition> = await ProcessDefinition.findAll({
       attributes: ['name'],
       group: 'name',
     });
 
-    const namesAsString: Array<string> = names.map((entry: ProcessDefinitionModel): string => {
+    const namesAsString: Array<string> = names.map((entry: ProcessDefinition): string => {
       return entry.name;
     });
 
@@ -119,8 +118,8 @@ export class ProcessDefinitionRepository implements IProcessDefinitionRepository
     //
     // NOTE:
     // We cannot simply use something like "GROUP BY name", because Postgres won't allow it on non-index columns.
-    const processDefinitions: Array<ProcessDefinitionModel> =
-      await bluebird.map<any, ProcessDefinitionModel>(namesAsString, this.getProcessDefinitionByName.bind(this));
+    const processDefinitions: Array<ProcessDefinition> =
+      await bluebird.map<any, ProcessDefinition>(namesAsString, this.getProcessDefinitionByName.bind(this));
 
     const runtimeProcessDefinitions: Array<ProcessDefinitionFromRepository> =
       processDefinitions.map(this._convertToProcessDefinitionRuntimeObject);
@@ -134,7 +133,7 @@ export class ProcessDefinitionRepository implements IProcessDefinitionRepository
     // For this use case, we only want to get the most up to date version of the process definition.
     //
     // See the comment in "persistProcessDefinitions" as to why we need to do it this way.
-    const query: Sequelize.FindOptions<IProcessDefinitionAttributes> = {
+    const query: FindOptions = {
       limit: 1,
       where: {
         name: name,
@@ -142,7 +141,7 @@ export class ProcessDefinitionRepository implements IProcessDefinitionRepository
       order: [ [ 'createdAt', 'DESC' ]],
     };
 
-    const definitions: Array<ProcessDefinitionModel> = await this.processDefinition.findAll(query);
+    const definitions: Array<ProcessDefinition> = await ProcessDefinition.findAll(query);
 
     if (!definitions || definitions.length === 0) {
       throw new NotFoundError(`Process definition with name "${name}" not found.`);
@@ -154,25 +153,25 @@ export class ProcessDefinitionRepository implements IProcessDefinitionRepository
   }
 
   public async deleteProcessDefinitionById(processModelId: string): Promise<void> {
-    const queryParams: Sequelize.DestroyOptions = {
+    const queryParams: DestroyOptions = {
       where: {
         name: processModelId,
       },
     };
 
-    await this.processDefinition.destroy(queryParams);
+    await ProcessDefinition.destroy(queryParams);
   }
 
   public async getHistoryByName(name: string): Promise<Array<ProcessDefinitionFromRepository>> {
 
-    const query: Sequelize.FindOptions<IProcessDefinitionAttributes> = {
+    const query: FindOptions = {
       where: {
         name: name,
       },
       order: [ [ 'createdAt', 'DESC' ]],
     };
 
-    const definitions: Array<ProcessDefinitionModel> = await this.processDefinition.findAll(query);
+    const definitions: Array<ProcessDefinition> = await ProcessDefinition.findAll(query);
 
     const noDefinitionsFound: boolean = !definitions || definitions.length === 0;
     if (noDefinitionsFound) {
@@ -189,13 +188,13 @@ export class ProcessDefinitionRepository implements IProcessDefinitionRepository
 
     // Note:
     // Hashes are unique, so there's no need to use that order/limit crutch we have above.
-    const query: Sequelize.FindOptions<IProcessDefinitionAttributes> = {
+    const query: FindOptions = {
       where: {
         hash: hash,
       },
     };
 
-    const definition: ProcessDefinitionModel = await this.processDefinition.findOne(query);
+    const definition: ProcessDefinition = await ProcessDefinition.findOne(query);
 
     if (!definition) {
       throw new NotFoundError(`Process definition with hash "${hash}" not found.`);
@@ -238,7 +237,7 @@ export class ProcessDefinitionRepository implements IProcessDefinitionRepository
    * @returns           The ProcessEngine runtime object describing a
    *                    ProcessDefinition.
    */
-  private _convertToProcessDefinitionRuntimeObject(dataModel: ProcessDefinitionModel): ProcessDefinitionFromRepository {
+  private _convertToProcessDefinitionRuntimeObject(dataModel: ProcessDefinition): ProcessDefinitionFromRepository {
 
     const processDefinition: ProcessDefinitionFromRepository = new ProcessDefinitionFromRepository();
     processDefinition.name = dataModel.name;
