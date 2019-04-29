@@ -1,6 +1,6 @@
 import {AllowNull, Column, CreatedAt, DataType, Model, Table, UpdatedAt} from 'sequelize-typescript';
 
-@Table({modelName: 'ProcessDefinition', tableName: 'ProcessDefinition', version: true})
+@Table({modelName: 'ProcessDefinition', tableName: 'ProcessDefinitions', version: true})
 export class ProcessDefinitionModel extends Model<ProcessDefinitionModel> {
 
   @AllowNull(false)
