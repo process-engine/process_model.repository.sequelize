@@ -18,7 +18,7 @@
     "@process-engine/process_model.contracts": "^2.0.0",
     "bcryptjs": "^2.4.3",
     "loggerhythm": "^3.0.3",
-    "sequelize": "~5.7.0",
+    "sequelize": "^5.8.0",
     "sequelize-typescript": "next"
   },
   "devDependencies": {
