@@ -1,4 +1,6 @@
-import {AllowNull, Column, CreatedAt, DataType, Model, Table, UpdatedAt} from 'sequelize-typescript';
+import {
+  AllowNull, Column, CreatedAt, DataType, Model, Table, UpdatedAt,
+} from 'sequelize-typescript';
 
 @Table({modelName: 'ProcessDefinition', tableName: 'ProcessDefinitions'})
 export class ProcessDefinitionModel extends Model<ProcessDefinitionModel> {
@@ -20,4 +22,5 @@ export class ProcessDefinitionModel extends Model<ProcessDefinitionModel> {
 
   @UpdatedAt
   public updatedAt?: Date;
+
 }
