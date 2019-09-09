@@ -18,14 +18,16 @@
     "@essential-projects/sequelize_connection_manager": "^3.0.0",
     "@process-engine/process_model.contracts": "feature~add_limit_and_offset_to_list_queries",
     "bcryptjs": "^2.4.3",
+    "bluebird": "^3.5.2",
+    "bluebird-global": "^1.0.1",
     "loggerhythm": "^3.0.3",
     "sequelize": "^5.8.0",
-    "sequelize-typescript": "next"
+    "sequelize-typescript": "^1.0.0"
   },
   "devDependencies": {
     "@essential-projects/eslint-config": "^1.0.0",
     "@types/bcryptjs": "^2.4.2",
-    "@types/bluebird": "^3.5.26",
+    "@types/bluebird-global": "^3.5.12",
     "@types/node": "^10.12.10",
     "@types/validator": "^10.11.0",
     "eslint": "^5.16.0",
