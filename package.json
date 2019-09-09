@@ -1,17 +1,25 @@
 {
   "name": "@process-engine/process_model.repository.sequelize",
-  "publishConfig": {
-    "registry": "https://www.npmjs.com"
-  },
   "version": "6.0.1",
   "description": "Uses sequelize to access and manipulate process model data.",
-  "license": "MIT",
   "main": "dist/commonjs/index.js",
   "typings": "dist/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/process-engine/process_model.repository.sequelize.git"
+  },
   "author": "5Minds IT-Solutions GmbH & Co. KG",
-  "contributors": [
-    "Christian Werner <christian.werner@5minds.de>"
+  "maintainers": [
+    "Alexander Kasten <alexander.kasten@5minds.de>",
+    "Christian Werner <christian.werner@5minds.de>",
+    "René Föhring <rene.foehring@5minds.de>",
+    "Steffen Knaup <steffen.knaup@5minds.de>"
   ],
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/process-engine/process_model.repository.sequelize/issues"
+  },
+  "homepage": "https://github.com/process-engine/process_model.repository.sequelize#readme",
   "dependencies": {
     "@essential-projects/bootstrapper_contracts": "^1.3.0",
     "@essential-projects/errors_ts": "^1.4.0",
@@ -22,7 +30,7 @@
     "bluebird-global": "^1.0.1",
     "loggerhythm": "^3.0.3",
     "sequelize": "^5.8.0",
-    "sequelize-typescript": "^1.0.0"
+    "sequelize-typescript": "next"
   },
   "devDependencies": {
     "@essential-projects/eslint-config": "^1.0.0",
