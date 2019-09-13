@@ -1,5 +1,4 @@
 import * as bcrypt from 'bcryptjs';
-import * as bluebird from 'bluebird';
 import {Logger} from 'loggerhythm';
 
 import {DestroyOptions, FindOptions} from 'sequelize';
@@ -118,7 +117,7 @@ export class ProcessDefinitionRepository implements IProcessDefinitionRepository
     //
     // NOTE:
     // We cannot simply use something like "GROUP BY name", because Postgres won't allow it on non-index columns.
-    const processDefinitions = await bluebird.map<string, ProcessDefinitionModel>(namesAsString, this.getProcessDefinitionByName.bind(this));
+    const processDefinitions = await Promise.map<string, ProcessDefinitionModel>(namesAsString, this.getProcessDefinitionByName.bind(this));
 
     const runtimeProcessDefinitions = processDefinitions.map(this.convertToProcessDefinitionRuntimeObject);
 
