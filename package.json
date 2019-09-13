@@ -24,7 +24,7 @@
     "@essential-projects/bootstrapper_contracts": "^1.3.0",
     "@essential-projects/errors_ts": "^1.4.0",
     "@essential-projects/sequelize_connection_manager": "^3.0.0",
-    "@process-engine/process_model.contracts": "feature~add_limit_and_offset_to_list_queries",
+    "@process-engine/process_model.contracts": "2.7.0-acad6f21-b10",
     "bcryptjs": "^2.4.3",
     "bluebird": "^3.5.2",
     "bluebird-global": "^1.0.1",
