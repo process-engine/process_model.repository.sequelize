@@ -34,6 +34,7 @@
   },
   "devDependencies": {
     "@essential-projects/eslint-config": "^1.0.0",
+    "@process-engine/ci_tools": "^2.0.0",
     "@types/bcryptjs": "^2.4.2",
     "@types/bluebird-global": "^3.5.12",
     "@types/node": "^10.12.10",
